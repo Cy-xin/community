@@ -5,3 +5,5 @@
 
 [github oauth](https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/)
 
+[SpringBoot-Mybatis](http://www.mybatis.org/spring-boot-starter/mybatis-spring-boot-autoconfigure/)
+

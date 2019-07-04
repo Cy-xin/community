@@ -2,6 +2,8 @@ package com.community.controller;
 
 import com.community.dto.AccessTokenDTO;
 import com.community.dto.GithubUser;
+import com.community.mapper.UserMapper;
+import com.community.model.User;
 import com.community.provider.GitHubProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,12 +11,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 
 @Controller
 public class AuthorizeController {
 
     @Autowired
     private GitHubProvider gitHubProvider;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @RequestMapping("/callback")
     public String callback(@RequestParam(name = "code")String code,
@@ -27,10 +33,17 @@ public class AuthorizeController {
         accessTokenDTO.setRedirect_uri("http://localhost:8887/callback");
         accessTokenDTO.setState(state);
         String accessToken = gitHubProvider.getAccessToken(accessTokenDTO);
-        GithubUser user = gitHubProvider.getUser(accessToken);
-        if (user != null){
+        GithubUser githubUser = gitHubProvider.getUser(accessToken);
+        if (githubUser != null){
+            User user = new User();
+            user.setToken(UUID.randomUUID().toString());
+            user.setName(githubUser.getName());
+            user.setAccountId(String.valueOf(githubUser.getId()));
+            user.setGmtCreate(System.currentTimeMillis());
+            user.setGmtModified(user.getGmtCreate());
+            userMapper.insert(user);
             //登录成功  写cookie和session
-            request.getSession().setAttribute("user",user);
+            request.getSession().setAttribute("user",githubUser);
             return "index";
         }else {
             //登录失败
